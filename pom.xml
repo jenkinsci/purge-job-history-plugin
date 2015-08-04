@@ -71,8 +71,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.findbugs.failure.strict>true</maven.findbugs.failure.strict>
-    <maven-hpi-plugin.version>1.96</maven-hpi-plugin.version>
   </properties>
 
   <repositories>
@@ -165,7 +163,6 @@
         <version>3.0.1</version>
         <configuration>
           <excludeFilterFile>src/findbugs/excludesFilter.xml</excludeFilterFile>
-          <failOnError>${maven.findbugs.failure.strict}</failOnError>
         </configuration>
         <executions>
           <execution>

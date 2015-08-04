@@ -1,11 +1,34 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2015, CloudBees, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package jenkins.plugins.purgejobhistory;
 
 import hudson.Extension;
 import hudson.cli.CLICommand;
-import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Run;
-import hudson.model.TopLevelItem;
+import hudson.security.ACL;
+import java.io.IOException;
 import java.util.ArrayList;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
@@ -15,35 +38,57 @@ import org.kohsuke.args4j.Option;
  */
 @Extension
 public class PurgeJobHistory extends CLICommand {
-    
+
     /**
      * Follows the progress of the operation
      */
-    @Option(name = "-r", usage = "Also reset the next build number.")
+    @Option(name = "-r", usage = "Also reset the next build number to 1.")
     public boolean reset = false;
 
     /**
      * The source item.
      */
-    @Argument(metaVar = "JOB", usage = "Name of the job to purge", required = true)
-    public TopLevelItem job;
+    @Argument(metaVar = "JOB", usage = "Name of the job whose history should be purged", required = true)
+    public Job<?, ?> job;
 
-    
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getShortDescription() {
         return Messages.PurgeJobHistory_ShortDescription();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected int run() throws Exception {
-        job.checkPermission(Item.DELETE);
-        Job<?,?> j = (Job<?, ?>) job;
-        for (Run<?,?> run: new ArrayList<Run<?, ?>>(j.getBuilds())) {
+        purge(job, reset);
+        return 0;
+    }
+
+    /**
+     * Purges the build history of the specified job.
+     *
+     * @param job                  the job to purge
+     * @param resetNextBuildNumber {@code true} if the next build number should be reset to {@code 1} after the purge
+     * @throws IOException if something went wrong.
+     */
+    public static void purge(Job<?, ?> job, boolean resetNextBuildNumber) throws IOException {
+        ACL lastACL = null;
+        for (Run<?, ?> run : new ArrayList<Run<?, ?>>(job.getBuilds())) {
+            ACL acl = run.getACL();
+            if (acl != lastACL) {
+                // all known implementations of Run will only do this check once, so this is a worthwhile
+                // optimization.
+                acl.checkPermission(Run.DELETE);
+                lastACL = acl;
+            }
             run.delete();
         }
-        if (reset) {
-            j.updateNextBuildNumber(1);
+        if (resetNextBuildNumber) {
+            job.updateNextBuildNumber(1);
         }
-        return 0;
     }
 }

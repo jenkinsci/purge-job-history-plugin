@@ -31,6 +31,7 @@ import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
+// TODO drop this once Core has an equivalent option handler
 @MetaInfServices(OptionHandler.class)
 public class JobOptionHandler extends GenericItemOptionHandler<Job> {
     public JobOptionHandler(CmdLineParser parser, OptionDef option, Setter<Job> setter) {

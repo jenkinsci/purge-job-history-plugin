@@ -87,7 +87,7 @@ public class PurgeJobHistoryAction implements Action {
      * {@inheritDoc}
      */
     public String getUrlName() {
-        return "purge-history";
+        return "purge-job-history";
     }
 
     /**

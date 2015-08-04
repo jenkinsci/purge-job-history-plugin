@@ -106,7 +106,7 @@ public class PurgeJobHistoryAction implements Action {
      * @throws IOException if something goes wrong.
      */
     @RequirePOST
-    public HttpResponse doDoPurge(StaplerRequest request, @QueryParameter boolean resetNextBuild) throws IOException {
+    public HttpResponse doDoPurge(@QueryParameter boolean resetNextBuild) throws IOException {
         PurgeJobHistory.purge(job, resetNextBuild);
         return HttpResponses.redirectTo("..");
     }

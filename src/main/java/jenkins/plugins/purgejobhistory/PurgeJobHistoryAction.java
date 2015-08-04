@@ -27,7 +27,6 @@ import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.Job;
 import hudson.model.Run;
-import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import java.io.IOException;
 import java.util.Collection;
@@ -36,18 +35,12 @@ import javax.annotation.Nonnull;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * An {@link Action} to allow the user to purge the job history.
  */
 public class PurgeJobHistoryAction implements Action {
-
-    /**
-     * The permission used to restrict access to the action.
-     */
-    public static Permission PERMISSION = Run.DELETE;
 
     /**
      * The {@link Job} we are attached to.
@@ -78,7 +71,7 @@ public class PurgeJobHistoryAction implements Action {
     public String getIconFileName() {
         // if you don't have the permission on the last build then we cannot purge all, so you don't have permission
         Run<?, ?> lastBuild = job.getLastBuild();
-        return lastBuild != null && lastBuild.hasPermission(PERMISSION) 
+        return lastBuild != null && lastBuild.hasPermission(Run.DELETE) 
                 ? "/plugin/purge-job-history/images/24x24/purge-job-history.png" 
                 : null;
     }

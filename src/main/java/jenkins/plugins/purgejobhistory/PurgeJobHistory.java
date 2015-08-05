@@ -46,6 +46,14 @@ public class PurgeJobHistory extends CLICommand {
     public boolean reset = false;
 
     /**
+     * Force delete even builds marked to be kept forever.
+     *
+     * @since 1.1
+     */
+    @Option(name = "-f", usage = "Force delete even builds marked to be kept forever.")
+    public boolean force = false;
+
+    /**
      * The source item.
      */
     @Argument(metaVar = "JOB", usage = "Name of the job whose history should be purged", required = true)
@@ -64,7 +72,7 @@ public class PurgeJobHistory extends CLICommand {
      */
     @Override
     protected int run() throws Exception {
-        purge(job, reset);
+        purge(job, reset, force);
         return 0;
     }
 
@@ -74,8 +82,22 @@ public class PurgeJobHistory extends CLICommand {
      * @param job                  the job to purge
      * @param resetNextBuildNumber {@code true} if the next build number should be reset to {@code 1} after the purge
      * @throws IOException if something went wrong.
+     * @deprecated use {@link #purge(Job, boolean, boolean)}
      */
+    @Deprecated
     public static void purge(Job<?, ?> job, boolean resetNextBuildNumber) throws IOException {
+        purge(job, resetNextBuildNumber, false);
+    }
+    /**
+     * Purges the build history of the specified job.
+     *
+     * @param job                  the job to purge
+     * @param resetNextBuildNumber {@code true} if the next build number should be reset to {@code 1} after the purge
+     * @param force                {@code true} to delete even builds marked to be kept forever
+     * @throws IOException if something went wrong.
+     * @since 1.1
+     */
+    public static void purge(Job<?, ?> job, boolean resetNextBuildNumber, boolean force) throws IOException {
         ACL lastACL = null;
         for (Run<?, ?> run : new ArrayList<Run<?, ?>>(job.getBuilds())) {
             ACL acl = run.getACL();
@@ -85,9 +107,12 @@ public class PurgeJobHistory extends CLICommand {
                 acl.checkPermission(Run.DELETE);
                 lastACL = acl;
             }
+            if (!force && run.isKeepLog()) {
+                continue;
+            }
             run.delete();
         }
-        if (resetNextBuildNumber) {
+        if (resetNextBuildNumber && job.getLastBuild() == null) {
             job.updateNextBuildNumber(1);
         }
     }

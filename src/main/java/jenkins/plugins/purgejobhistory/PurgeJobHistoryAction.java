@@ -33,6 +33,8 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.annotation.Nonnull;
 import jenkins.model.TransientActionFactory;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -71,8 +73,8 @@ public class PurgeJobHistoryAction implements Action {
     public String getIconFileName() {
         // if you don't have the permission on the last build then we cannot purge all, so you don't have permission
         Run<?, ?> lastBuild = job.getLastBuild();
-        return lastBuild != null && lastBuild.hasPermission(Run.DELETE) 
-                ? "/plugin/purge-job-history/images/24x24/purge-job-history.png" 
+        return lastBuild != null && lastBuild.hasPermission(Run.DELETE)
+                ? "/plugin/purge-job-history/images/24x24/purge-job-history.png"
                 : null;
     }
 
@@ -93,14 +95,17 @@ public class PurgeJobHistoryAction implements Action {
     /**
      * Does the actual purging when triggered via the UI.
      *
-     * @param request        the request.
      * @param resetNextBuild the reset flag.
+     * @param forceDelete force deleting even runs that have been flagged for retention.
      * @return the response.
      * @throws IOException if something goes wrong.
      */
     @RequirePOST
-    public HttpResponse doDoPurge(@QueryParameter boolean resetNextBuild) throws IOException {
-        PurgeJobHistory.purge(job, resetNextBuild);
+    @Restricted(NoExternalUse.class) // only used via stapler
+    public HttpResponse doDoPurge(@QueryParameter("resetNextBuild") boolean resetNextBuild, 
+                                  @QueryParameter("forceDelete") boolean forceDelete)
+            throws IOException {
+        PurgeJobHistory.purge(job, resetNextBuild, forceDelete);
         return HttpResponses.redirectTo("..");
     }
 

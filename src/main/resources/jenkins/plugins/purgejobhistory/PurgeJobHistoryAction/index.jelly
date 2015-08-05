@@ -31,7 +31,10 @@
           ${%blurb(it.job.pronoun, it.job.displayName)}
         </f:block>
         <f:entry title="${%Also, reset next build number to 1}" >
-          <f:checkbox field="resetNextBuild" />
+          <f:checkbox name="resetNextBuild" />
+        </f:entry>
+        <f:entry title="${%Force deleting 'Keep this build forever' tagged builds}" >
+          <f:checkbox name="forceDelete" />
         </f:entry>
         <f:block>
           <f:submit value="${%Yes}" />

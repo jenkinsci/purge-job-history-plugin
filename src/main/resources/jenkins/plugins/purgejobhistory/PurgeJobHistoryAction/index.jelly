@@ -33,7 +33,7 @@
         <f:entry title="${%Also, reset next build number to 1}" >
           <f:checkbox name="resetNextBuild" />
         </f:entry>
-        <f:entry title="${%Force deleting 'Keep this build forever' tagged builds}" >
+        <f:entry title="${%Delete even builds marked to be kept forever}" >
           <f:checkbox name="forceDelete" />
         </f:entry>
         <f:block>

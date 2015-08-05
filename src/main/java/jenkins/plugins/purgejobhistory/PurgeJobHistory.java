@@ -46,11 +46,11 @@ public class PurgeJobHistory extends CLICommand {
     public boolean reset = false;
 
     /**
-     * Force deleting all builds.
+     * Force delete even builds marked to be kept forever.
      *
      * @since 1.1
      */
-    @Option(name = "-f", usage = "Force deleting all builds.")
+    @Option(name = "-f", usage = "Force delete even builds marked to be kept forever.")
     public boolean force = false;
 
     /**

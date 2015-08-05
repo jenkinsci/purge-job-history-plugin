@@ -80,7 +80,9 @@ public class PurgeJobHistory extends CLICommand {
      * @param job                  the job to purge
      * @param resetNextBuildNumber {@code true} if the next build number should be reset to {@code 1} after the purge
      * @throws IOException if something went wrong.
+     * @deprecated use {@link #purge(Job, boolean, boolean)}
      */
+    @Deprecated
     public static void purge(Job<?, ?> job, boolean resetNextBuildNumber) throws IOException {
         purge(job, resetNextBuildNumber, false);
     }

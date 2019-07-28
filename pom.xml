@@ -74,6 +74,7 @@
     <jenkins.version>2.176.1</jenkins.version>
     <java.level>8</java.level>
     <java.version>1.8</java.version>
+    <junit.version>1.6</junit.version>
   </properties>
 
   <repositories>
@@ -113,9 +114,9 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
+      <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

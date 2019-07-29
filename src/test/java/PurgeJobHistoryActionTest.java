@@ -15,12 +15,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.xml.sax.SAXException;
-
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 public class PurgeJobHistoryActionTest {
 

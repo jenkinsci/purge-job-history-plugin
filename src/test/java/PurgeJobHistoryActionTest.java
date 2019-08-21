@@ -15,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -25,8 +26,6 @@ public class PurgeJobHistoryActionTest {
     public JenkinsRule jenkins = new JenkinsRule();
 
     private String jobName = "PurgeJobHistoryTestJob";
-    private String controlMessage = "Hello Test";
-    private String shellScript = "echo " + controlMessage;
     private Integer numberOfBuilds = 3;
 
 
@@ -50,34 +49,33 @@ public class PurgeJobHistoryActionTest {
         performDeleteJobBuildHistory(project, false, false);
         Assert.assertEquals((long) this.numberOfBuilds, project.getBuilds().size());
         FreeStyleBuild build = this.buildJob(project);
-        Assert.assertEquals(4, build.getNumber());
+        Assert.assertEquals(this.numberOfBuilds + 1, build.getNumber());
     }
 
     @Test
     public void testWithFreeStyleJobWithResetTrueForceFalse() throws Exception {
         FreeStyleProject project = this.createProject();
         this.generateBuilds(project);
-        performDeleteJobBuildHistory(project, false, false);
+        performDeleteJobBuildHistory(project, true, false);
         Assert.assertEquals((long) this.numberOfBuilds, project.getBuilds().size());
         FreeStyleBuild build = this.buildJob(project);
-        Assert.assertEquals(1, build.getNumber());
+        Assert.assertEquals(this.numberOfBuilds + 1, build.getNumber());
     }
 
     @Test
     public void testWithFreeStyleJobWithResetFalseForceTrue() throws Exception {
         FreeStyleProject project = this.createProject();
         this.generateBuilds(project);
-        performDeleteJobBuildHistory(project, false, false);
+        performDeleteJobBuildHistory(project, false, true);
         Assert.assertEquals((long) 0, project.getBuilds().size());
         FreeStyleBuild build = this.buildJob(project);
-        Assert.assertEquals(4, build.getNumber());
+        Assert.assertEquals(this.numberOfBuilds + 1, build.getNumber());
     }
 
     private void generateBuilds(Project project) throws Exception {
         for (int i = 0; i < this.numberOfBuilds; i++) {
             FreeStyleBuild build = this.buildJob(project);
-            jenkins.assertLogContains(this.controlMessage, build);
-            markBuildKeptForever(project,build);
+            markBuildKeptForever(project, build);
         }
         Assert.assertEquals((long) this.numberOfBuilds, project.getBuilds().size());
     }
@@ -85,7 +83,6 @@ public class PurgeJobHistoryActionTest {
     private FreeStyleProject createProject() throws IOException {
         FreeStyleProject project = jenkins.createFreeStyleProject(this.jobName + UUID.randomUUID().toString());
         project.setLogRotator(new LogRotator(null, null, null, null));
-        project.getBuildersList().add(new Shell(this.shellScript));
         return project;
     }
 

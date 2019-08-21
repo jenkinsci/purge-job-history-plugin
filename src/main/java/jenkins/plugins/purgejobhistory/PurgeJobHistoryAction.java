@@ -102,7 +102,7 @@ public class PurgeJobHistoryAction implements Action {
      */
     @RequirePOST
     @Restricted(NoExternalUse.class) // only used via stapler
-    public HttpResponse doDoPurge(@QueryParameter("resetNextBuild") boolean resetNextBuild, 
+    public HttpResponse doDoPurge(@QueryParameter("resetNextBuild") boolean resetNextBuild,
                                   @QueryParameter("forceDelete") boolean forceDelete)
             throws IOException {
         PurgeJobHistory.purge(job, resetNextBuild, forceDelete);
@@ -113,7 +113,7 @@ public class PurgeJobHistoryAction implements Action {
      * Add the action to every job.
      */
     @Extension
-    public static class TransientActionFactoryImpl extends TransientActionFactory<Job> {
+    public static class ActionInjector extends TransientActionFactory<Job> {
 
         /**
          * {@inheritDoc}
@@ -128,7 +128,7 @@ public class PurgeJobHistoryAction implements Action {
          */
         @Nonnull
         @Override
-        public Collection<? extends Action> createFor(Job target) {
+        public Collection<PurgeJobHistoryAction> createFor(Job target) {
             return Collections.singleton(new PurgeJobHistoryAction(target));
         }
     }

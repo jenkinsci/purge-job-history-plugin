@@ -33,8 +33,10 @@ import hudson.security.ACL;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import hudson.util.RunList;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
@@ -136,6 +138,7 @@ public class PurgeJobHistory extends CLICommand {
 
 
     public void purge(AbstractItem item, boolean reset, boolean force, boolean recurse) throws IOException {
+        LOGGER.log(Level.INFO, String.format("Purge started for %s - Reset Build Num:%s - Force Delete:%s - Recursive:%s", item.getFullName(), reset,force,recurse));
         if (recurse) {
             if (item instanceof Folder) {
                 Folder folder = (Folder) item;
@@ -144,15 +147,16 @@ public class PurgeJobHistory extends CLICommand {
                 }
             } else if (item instanceof WorkflowMultiBranchProject) {
                 WorkflowMultiBranchProject workflowMultiBranchProject = (WorkflowMultiBranchProject) item;
-                for (AbstractItem innerItem : workflowMultiBranchProject.getAllItems(AbstractItem.class)) {
+                for (AbstractItem innerItem : workflowMultiBranchProject.getAllJobs()) {
                     purge(innerItem, reset, force, recurse);
                 }
             } else {
-                LOGGER.warning("Can not recurse into " + item.getClass().getName());
+                LOGGER.warning("Can not recurse into " + item.getFullName());
             }
         }
 
-        if (item instanceof Job) {
+        if (item instanceof Job || item instanceof WorkflowJob) {
+            LOGGER.info(String.format("Deleting builds for %s", item.getFullName()));
             this.processJobForDeletion((Job) item, reset, force);
         } else {
             LOGGER.warning("Passed Item Type is not instance of Job. Skipping.");

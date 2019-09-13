@@ -37,7 +37,7 @@ public class PurgeJobHistoryActionTest {
     public JenkinsRule jenkins = new JenkinsRule();
 
     @Rule
-    public GitSampleRepoRule gitRepo;
+    public GitSampleRepoRule gitRepo = new GitSampleRepoRule();
 
     private Integer numberOfBuilds = 3;
     private boolean resetBuildNum;
@@ -51,14 +51,6 @@ public class PurgeJobHistoryActionTest {
     @Parameterized.Parameters
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {false, false, false, false, 0, 4},
-                {false, false, false, true, 3, 4},
-                {false, false, true, false, 0, 1},
-                {false, false, true, true, 3, 4},
-                {false, true, false, false, 0, 4},
-                {false, true, false, true, 0, 4},
-                {false, true, true, false, 0, 1},
-                {false, true, true, true, 0, 1},
                 {true, false, false, false, 0, 4},
                 {true, false, false, true, 3, 4},
                 {true, false, true, false, 0, 1},
@@ -67,6 +59,15 @@ public class PurgeJobHistoryActionTest {
                 {true, true, false, true, 0, 4},
                 {true, true, true, false, 0, 1},
                 {true, true, true, true, 0, 1},
+                {false, false, false, false, 0, 4},
+                {false, false, false, true, 3, 4},
+                {false, false, true, false, 0, 1},
+                {false, false, true, true, 3, 4},
+                {false, true, false, false, 0, 4},
+                {false, true, false, true, 0, 4},
+                {false, true, true, false, 0, 1},
+                {false, true, true, true, 0, 1}
+
         });
     }
 
@@ -85,20 +86,26 @@ public class PurgeJobHistoryActionTest {
     }
 
     @Test
-    public void testFreeStyleProject() throws Exception {
-        FreeStyleProject freeStyleProject = this.initFreeStyleProject(this.keepItForever);
-        this.performTest(freeStyleProject);
+    public void testWorkflowMultiBranchProject() throws Exception {
+        WorkflowMultiBranchProject workflowMultiBranchProject = this.initWorkflowMultiBranchProject(this.keepItForever);
+        this.performTest(workflowMultiBranchProject);
     }
 
-    @Test
-    public void testWorkflowJob() throws Exception {
-        WorkflowJob workflowJob = this.initWorkflowJob(this.keepItForever);
-        this.performTest(workflowJob);
-    }
+//    @Test
+//    public void testFreeStyleProject() throws Exception {
+//        FreeStyleProject freeStyleProject = this.initFreeStyleProject(this.keepItForever);
+//        this.performTest(freeStyleProject);
+//    }
+//
+//    @Test
+//    public void testWorkflowJob() throws Exception {
+//        WorkflowJob workflowJob = this.initWorkflowJob(this.keepItForever);
+//        this.performTest(workflowJob);
+//    }
 
-    private void performTest(Job job) throws Exception {
-        this.performDeleteJobBuildHistory(job, this.resetBuildNum, this.forceDelete, this.recurse);
-        List<BuildStatus> builds = this.getBuildStatus(job);
+    private void performTest(AbstractItem item) throws Exception {
+        this.performDeleteJobBuildHistory(item, this.resetBuildNum, this.forceDelete, this.recurse);
+        List<BuildStatus> builds = this.getBuildStatus(item);
         for (BuildStatus buildStatus : builds) {
             Assert.assertEquals(this.expectedBuildNumbers, buildStatus.getNumberOfBuilds());
             Assert.assertEquals(this.expectedNextBuildNumber, buildStatus.getNextBuildNumber());
@@ -149,14 +156,13 @@ public class PurgeJobHistoryActionTest {
     }
 
     private WorkflowMultiBranchProject initWorkflowMultiBranchProject(boolean keepItForever) throws Exception {
-        GitSampleRepoRule gitRepo = new GitSampleRepoRule();
-        gitRepo = new GitSampleRepoRule();
         gitRepo.init();
         gitRepo.write("Jenkinsfile", "");
         gitRepo.git("add", "Jenkinsfile");
         gitRepo.git("commit", "--all", "--message=InitRepoWithFile");
+        gitRepo.git("checkout", "-b", "anotherBranch");
         WorkflowMultiBranchProject workflowMultiBranchProject = this.jenkins.createProject(WorkflowMultiBranchProject.class, UUID.randomUUID().toString());
-        workflowMultiBranchProject.getSourcesList().add(new BranchSource(new GitSCMSource(null, this.gitRepo.toString(), "", "none", "", false)));
+        workflowMultiBranchProject.getSourcesList().add(new BranchSource(new GitSCMSource(null, this.gitRepo.toString(), "", "*", "", false)));
         workflowMultiBranchProject.setOrphanedItemStrategy(new DefaultOrphanedItemStrategy(true, null, null));
         workflowMultiBranchProject.scheduleBuild2(0);
         this.jenkins.waitUntilNoActivity();
@@ -200,8 +206,8 @@ public class PurgeJobHistoryActionTest {
         return run;
     }
 
-    private void performDeleteJobBuildHistory(Job job, boolean resetBuildNumber, boolean force, boolean recurse) throws Exception {
-        HtmlForm form = jenkins.createWebClient().getPage(job, "purge-job-history").getFormByName("purge");
+    private void performDeleteJobBuildHistory(AbstractItem item, boolean resetBuildNumber, boolean force, boolean recurse) throws Exception {
+        HtmlForm form = jenkins.createWebClient().getPage(item, "purge-job-history").getFormByName("purge");
         form.getInputByName("resetNextBuild").setChecked(resetBuildNumber);
         form.getInputByName("forceDelete").setChecked(force);
         form.getInputByName("recurse").setChecked(recurse);

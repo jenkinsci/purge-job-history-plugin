@@ -24,9 +24,9 @@
 package jenkins.plugins.purgejobhistory;
 
 import hudson.Extension;
+import hudson.model.AbstractItem;
 import hudson.model.Action;
 import hudson.model.Job;
-import hudson.model.Run;
 import hudson.util.HttpResponses;
 import java.io.IOException;
 import java.util.Collection;
@@ -44,92 +44,66 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 public class PurgeJobHistoryAction implements Action {
 
+    private String iconPath = "/plugin/purge-job-history/images/24x24/purge-job-history.png";
+    private PurgeJobHistory purgeJobHistory = new PurgeJobHistory();
+
     /**
      * The {@link Job} we are attached to.
      */
-    private final Job<?, ?> job;
+    private AbstractItem item;
 
-    /**
-     * Constructor.
-     *
-     * @param job the job we are an action for,
-     */
-    public PurgeJobHistoryAction(Job<?, ?> job) {
-        this.job = job;
+    public PurgeJobHistoryAction(AbstractItem item){
+        this.item = item;
     }
 
-    /**
-     * Gets the job we are attached to.
-     *
-     * @return the job we are attached to.
-     */
-    public Job<?, ?> getJob() {
-        return job;
+
+    public AbstractItem getItem() {
+        return item;
     }
 
     /**
      * {@inheritDoc}
      */
     public String getIconFileName() {
-        // if you don't have the permission on the last build then we cannot purge all, so you don't have permission
-        Run<?, ?> lastBuild = job.getLastBuild();
-        return lastBuild != null && lastBuild.hasPermission(Run.DELETE)
-                ? "/plugin/purge-job-history/images/24x24/purge-job-history.png"
-                : null;
+        //Check permission first.
+        if(purgeJobHistory.checkPermission(this.item)) {
+            return this.iconPath;
+        } else {
+            return null;
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public String getDisplayName() {
         return Messages.PurgeJobHistoryAction_DisplayName();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public String getUrlName() {
         return "purge-job-history";
     }
 
-    /**
-     * Does the actual purging when triggered via the UI.
-     *
-     * @param resetNextBuild the reset flag.
-     * @param forceDelete force deleting even runs that have been flagged for retention.
-     * @return the response.
-     * @throws IOException if something goes wrong.
-     */
     @RequirePOST
-    @Restricted(NoExternalUse.class) // only used via stapler
-    public HttpResponse doDoPurge(@QueryParameter("resetNextBuild") boolean resetNextBuild,
-                                  @QueryParameter("forceDelete") boolean forceDelete)
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doDoPurge(@QueryParameter(value = "resetNextBuild") boolean resetNextBuild,
+                                  @QueryParameter(value = "forceDelete") boolean forceDelete,
+                                  @QueryParameter(value = "recurse") boolean recurse)
             throws IOException {
-        PurgeJobHistory.purge(job, resetNextBuild, forceDelete);
+        purgeJobHistory.purge(item,resetNextBuild, forceDelete, recurse);
         return HttpResponses.redirectTo("..");
     }
 
-    /**
-     * Add the action to every job.
-     */
     @Extension
-    public static class ActionInjector extends TransientActionFactory<Job> {
+    public static class ActionInjector extends TransientActionFactory<AbstractItem> {
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
-        public Class<Job> type() {
-            return Job.class;
+        public Class<AbstractItem> type() {
+            return AbstractItem.class;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Nonnull
         @Override
-        public Collection<PurgeJobHistoryAction> createFor(Job target) {
-            return Collections.singleton(new PurgeJobHistoryAction(target));
+        public Collection<? extends Action> createFor(@Nonnull AbstractItem abstractItem) {
+            return Collections.singleton(new PurgeJobHistoryAction(abstractItem));
         }
+
     }
 }

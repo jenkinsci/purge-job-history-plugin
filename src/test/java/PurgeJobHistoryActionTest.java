@@ -3,12 +3,12 @@ import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.model.Build;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Project;
+import hudson.model.*;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Shell;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -72,6 +72,17 @@ public class PurgeJobHistoryActionTest {
         Assert.assertEquals(this.numberOfBuilds + 1, build.getNumber());
     }
 
+    @Test
+    public void testWithFreeStyleJobWithResetTrueForceTrueWhileJobIsRunning() throws Exception {
+        WorkflowJob workflowJob = this.jenkins.createProject(WorkflowJob.class, UUID.randomUUID().toString());
+        workflowJob.setLogRotator(new LogRotator(null,null,null,null));
+        workflowJob.setDefinition(new CpsFlowDefinition(" sleep 30 "));
+        WorkflowRun run = workflowJob.scheduleBuild2(0).waitForStart();
+        performDeleteJobBuildHistory(workflowJob,true,true);
+        run.getLog(100);
+        run.doKill();
+    }
+
     private void generateBuilds(Project project) throws Exception {
         for (int i = 0; i < this.numberOfBuilds; i++) {
             FreeStyleBuild build = this.buildJob(project);
@@ -94,6 +105,13 @@ public class PurgeJobHistoryActionTest {
 
     private void performDeleteJobBuildHistory(Project project, boolean resetBuildNumner, boolean force) throws Exception {
         HtmlForm form = jenkins.createWebClient().getPage(project, "purge-job-history").getFormByName("purge");
+        form.getInputByName("resetNextBuild").setChecked(resetBuildNumner);
+        form.getInputByName("forceDelete").setChecked(force);
+        jenkins.submit(form);
+    }
+
+    private void performDeleteJobBuildHistory(WorkflowJob job, boolean resetBuildNumner, boolean force) throws Exception {
+        HtmlForm form = jenkins.createWebClient().getPage(job, "purge-job-history").getFormByName("purge");
         form.getInputByName("resetNextBuild").setChecked(resetBuildNumner);
         form.getInputByName("forceDelete").setChecked(force);
         jenkins.submit(form);

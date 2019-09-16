@@ -30,11 +30,13 @@ import hudson.model.AbstractItem;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.security.ACL;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import hudson.util.RunList;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
@@ -138,8 +140,9 @@ public class PurgeJobHistory extends CLICommand {
 
 
     public void purge(AbstractItem item, boolean reset, boolean force, boolean recurse) throws IOException {
-        LOGGER.log(Level.INFO, String.format("Purge started for %s - Reset Build Num:%s - Force Delete:%s - Recursive:%s", item.getFullName(), reset,force,recurse));
+        LOGGER.info(String.format("Purge started for %s - Reset Build Num:%s - Force Delete:%s - Recursive:%s", item.getFullName(), reset, force, recurse));
         if (recurse) {
+            LOGGER.info(String.format("Recursing into %s", item.getFullName()));
             if (item instanceof Folder) {
                 Folder folder = (Folder) item;
                 for (AbstractItem innerItem : folder.getAllItems(AbstractItem.class)) {

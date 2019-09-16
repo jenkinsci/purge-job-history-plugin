@@ -110,7 +110,8 @@ public class PurgeJobHistory extends CLICommand {
             if (!force && run.isKeepLog()) {
                 continue;
             }
-            run.delete();
+            if( !run.isBuilding())
+                run.delete();
         }
         if (resetNextBuildNumber && job.getLastBuild() == null) {
             job.updateNextBuildNumber(1);

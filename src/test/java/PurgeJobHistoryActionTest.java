@@ -7,8 +7,6 @@ import hudson.tasks.LogRotator;
 import jenkins.branch.BranchSource;
 import jenkins.plugins.git.GitSCMSource;
 import jenkins.plugins.git.GitSampleRepoRule;
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 import org.junit.Assert;
@@ -21,18 +19,15 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
 
 @RunWith(Parameterized.class)
 public class PurgeJobHistoryActionTest {
 
-    private static Logger logger = Logger.getLogger(PurgeJobHistoryActionTest.class);
 
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
@@ -108,8 +103,15 @@ public class PurgeJobHistoryActionTest {
         this.performDeleteJobBuildHistory(item, this.resetBuildNum, this.forceDelete, this.recurse);
         List<BuildStatus> builds = this.getBuildStatus(item);
         for (BuildStatus buildStatus : builds) {
-            Assert.assertEquals(this.expectedBuildNumbers, buildStatus.getNumberOfBuilds());
-            Assert.assertEquals(this.expectedNextBuildNumber, buildStatus.getNextBuildNumber());
+            if ( this.recurse == false && item instanceof WorkflowMultiBranchProject) {
+                // For WorkflowMultiBranch project. If recurse is false, can not delete any build. Because Job it self has no runs.
+                Assert.assertEquals(this.expectedBuildNumbers, 0);
+                Assert.assertEquals(this.expectedNextBuildNumber, buildStatus.getNextBuildNumber());
+            }
+            else {
+                Assert.assertEquals(this.expectedBuildNumbers, buildStatus.getNumberOfBuilds());
+                Assert.assertEquals(this.expectedNextBuildNumber, buildStatus.getNextBuildNumber());
+            }
         }
     }
 
@@ -158,13 +160,38 @@ public class PurgeJobHistoryActionTest {
 
     private WorkflowMultiBranchProject initWorkflowMultiBranchProject(boolean keepItForever) throws Exception {
         gitRepo.init();
-        gitRepo.write("Jenkinsfile", "");
+        if (keepItForever)
+            gitRepo.write("Jenkinsfile", "pipeline { \n" +
+                    "    agent { label 'master' } \n" +
+                    "    options { buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '') } \n" +
+                    "    stages { \n" +
+                    "        stage('test') { \n" +
+                    "            steps { \n" +
+                    "                script{ \n" +
+                    "                    echo 'test' \n" +
+                    "                } \n" +
+                    "            } \n" +
+                    "        } \n" +
+                    "    } \n" +
+                    "}");
+        else
+            gitRepo.write("Jenkinsfile", "pipeline { \n" +
+                    "    agent { label 'master' } \n" +
+                    "    stages { \n" +
+                    "        stage('test') { \n" +
+                    "            steps { \n" +
+                    "                script{ \n" +
+                    "                    echo 'test' \n" +
+                    "                } \n" +
+                    "            } \n" +
+                    "        } \n" +
+                    "    } \n" +
+                    "}");
         gitRepo.git("add", "Jenkinsfile");
         gitRepo.git("commit", "--all", "--message=InitRepoWithFile");
         gitRepo.git("checkout", "-b", "anotherBranch");
         WorkflowMultiBranchProject workflowMultiBranchProject = this.jenkins.createProject(WorkflowMultiBranchProject.class, UUID.randomUUID().toString());
         workflowMultiBranchProject.getSourcesList().add(new BranchSource(new GitSCMSource(null, this.gitRepo.toString(), "", "*", "", false)));
-        workflowMultiBranchProject.setOrphanedItemStrategy(new DefaultOrphanedItemStrategy(true, null, null));
         workflowMultiBranchProject.scheduleBuild2(0);
         this.jenkins.waitUntilNoActivity();
         for (WorkflowJob job : workflowMultiBranchProject.getAllItems(WorkflowJob.class)) {
@@ -190,6 +217,9 @@ public class PurgeJobHistoryActionTest {
         int currentNumberOfBuilds = job.getBuilds().size();
         for (int i = currentNumberOfBuilds; i < this.numberOfBuilds; i++) {
             Run run = this.buildJob(job);
+        }
+        for(int i = 0; i < this.numberOfBuilds; i++){
+            Run run = job.getBuild(String.valueOf(i+1));
             if (keepItForever)
                 markBuildKeptForever(run);
         }

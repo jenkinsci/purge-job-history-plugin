@@ -34,7 +34,6 @@ import hudson.security.ACL;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.util.RunList;
@@ -177,9 +176,15 @@ public class PurgeJobHistory extends CLICommand {
         Iterator iterator = runList.iterator();
         while (iterator.hasNext()) {
             Run run = (Run) iterator.next();
-            if (!force && run.isKeepLog())
+            LOGGER.info(String.format("Deleting build %s", run.getFullDisplayName()));
+            if (!force && run.isKeepLog()) {
+                LOGGER.info(String.format("Force:%s - KeepLog:%s - Skipping", force, run.isKeepLog()));
                 continue;
-            run.delete();
+            }
+            if( !run.isBuilding()) {
+                run.delete();
+                LOGGER.info(String.format("Deleted build %s", run.getFullDisplayName()));
+            }
         }
     }
 

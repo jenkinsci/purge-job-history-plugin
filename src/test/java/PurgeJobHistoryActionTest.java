@@ -1,4 +1,3 @@
-import com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -47,7 +46,7 @@ public class PurgeJobHistoryActionTest {
     @Parameterized.Parameters
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {true, false, false, false, 0, 4},
+                {true, false, false, false, 0, 4}, //0
                 {true, false, false, true, 3, 4},
                 {true, false, true, false, 0, 1},
                 {true, false, true, true, 3, 4},
@@ -55,7 +54,7 @@ public class PurgeJobHistoryActionTest {
                 {true, true, false, true, 0, 4},
                 {true, true, true, false, 0, 1},
                 {true, true, true, true, 0, 1},
-                {false, false, false, false, 0, 4},
+                {false, false, false, false, 0, 4}, //9
                 {false, false, false, true, 3, 4},
                 {false, false, true, false, 0, 1},
                 {false, false, true, true, 3, 4},
@@ -87,17 +86,11 @@ public class PurgeJobHistoryActionTest {
         this.performTest(workflowMultiBranchProject);
     }
 
-//    @Test
-//    public void testFreeStyleProject() throws Exception {
-//        FreeStyleProject freeStyleProject = this.initFreeStyleProject(this.keepItForever);
-//        this.performTest(freeStyleProject);
-//    }
-//
-//    @Test
-//    public void testWorkflowJob() throws Exception {
-//        WorkflowJob workflowJob = this.initWorkflowJob(this.keepItForever);
-//        this.performTest(workflowJob);
-//    }
+    @Test
+    public void testFreeStyleProject() throws Exception {
+        FreeStyleProject freeStyleProject = this.initFreeStyleProject(this.keepItForever);
+        this.performTest(freeStyleProject);
+    }
 
     private void performTest(AbstractItem item) throws Exception {
         this.performDeleteJobBuildHistory(item, this.resetBuildNum, this.forceDelete, this.recurse);
@@ -105,8 +98,8 @@ public class PurgeJobHistoryActionTest {
         for (BuildStatus buildStatus : builds) {
             if ( this.recurse == false && item instanceof WorkflowMultiBranchProject) {
                 // For WorkflowMultiBranch project. If recurse is false, can not delete any build. Because Job it self has no runs.
-                Assert.assertEquals(this.expectedBuildNumbers, 0);
-                Assert.assertEquals(this.expectedNextBuildNumber, buildStatus.getNextBuildNumber());
+                Assert.assertEquals((long)this.numberOfBuilds, buildStatus.getNumberOfBuilds());
+                Assert.assertEquals((this.numberOfBuilds + 1), buildStatus.getNextBuildNumber());
             }
             else {
                 Assert.assertEquals(this.expectedBuildNumbers, buildStatus.getNumberOfBuilds());
@@ -114,7 +107,6 @@ public class PurgeJobHistoryActionTest {
             }
         }
     }
-
 
     private List<BuildStatus> getBuildStatus(AbstractItem item) {
         if (item instanceof FreeStyleProject) {
@@ -143,19 +135,11 @@ public class PurgeJobHistoryActionTest {
 
     }
 
-
     private FreeStyleProject initFreeStyleProject(boolean keepItForever) throws Exception {
         FreeStyleProject freeStyleProject = this.jenkins.createFreeStyleProject(UUID.randomUUID().toString());
         freeStyleProject.setLogRotator(new LogRotator(null, null, null, null));
         this.generateBuilds(freeStyleProject, keepItForever);
         return freeStyleProject;
-    }
-
-    private WorkflowJob initWorkflowJob(boolean keepItForever) throws Exception {
-        WorkflowJob workflowJob = this.jenkins.createProject(WorkflowJob.class, UUID.randomUUID().toString());
-        workflowJob.setLogRotator(new LogRotator(null, null, null, null));
-        this.generateBuilds(workflowJob, keepItForever);
-        return workflowJob;
     }
 
     private WorkflowMultiBranchProject initWorkflowMultiBranchProject(boolean keepItForever) throws Exception {
@@ -200,18 +184,6 @@ public class PurgeJobHistoryActionTest {
         return workflowMultiBranchProject;
     }
 
-    private MockFolder initFolder(boolean keepItForever) throws Exception {
-        MockFolder folder = this.jenkins.createFolder(UUID.randomUUID().toString());
-        FreeStyleProject folderFreeStyleProject = this.initFreeStyleProject(keepItForever);
-        WorkflowJob folderWorkflowJob = this.initWorkflowJob(keepItForever);
-        WorkflowMultiBranchProject folderWorkflowMultiBranchProject = this.initWorkflowMultiBranchProject(keepItForever);
-        folder.add(folderFreeStyleProject, folderFreeStyleProject.getName());
-        folder.add(folderWorkflowJob, folderWorkflowJob.getName());
-        folder.add(folderWorkflowMultiBranchProject, folderWorkflowMultiBranchProject.getName());
-        return folder;
-    }
-
-
     private void generateBuilds(Job job, boolean keepItForever) throws Exception {
 
         int currentNumberOfBuilds = job.getBuilds().size();
@@ -238,7 +210,9 @@ public class PurgeJobHistoryActionTest {
     }
 
     private void performDeleteJobBuildHistory(AbstractItem item, boolean resetBuildNumber, boolean force, boolean recurse) throws Exception {
-        HtmlForm form = jenkins.createWebClient().getPage(item, "purge-job-history").getFormByName("purge");
+        HtmlPage htmlPage = jenkins.createWebClient().getPage(item, "purge-job-history");
+        HtmlForm form = htmlPage.getFormByName("purge");
+        String test = form.toString();
         form.getInputByName("resetNextBuild").setChecked(resetBuildNumber);
         form.getInputByName("forceDelete").setChecked(force);
         form.getInputByName("recurse").setChecked(recurse);
@@ -252,5 +226,4 @@ public class PurgeJobHistoryActionTest {
         page = jenkins.createWebClient().getPage(run.getParent(), String.valueOf(run.getNumber()));
         Assert.assertTrue(page.getBody().getTextContent().contains("Don't keep this build forever"));
     }
-
 }

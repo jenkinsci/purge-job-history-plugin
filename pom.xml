@@ -78,11 +78,11 @@
         <java.version>1.8</java.version>
         <junit.version>1.6</junit.version>
         <workflow-multibranch.version>2.21</workflow-multibranch.version>
-        <scm-api.version>2.2.7</scm-api.version>
+        <scm-api.version>2.2.8</scm-api.version>
         <workflow-step-api.version>2.16</workflow-step-api.version>
         <workflow-scm-step-plugin.version>2.4</workflow-scm-step-plugin.version>
-        <workflow-support.version>2.17</workflow-support.version>
-        <workflow-cps.version>2.53</workflow-cps.version>
+        <workflow-support.version>2.20</workflow-support.version>
+        <workflow-cps.version>2.56</workflow-cps.version>
         <git-plugin.version>3.9.1</git-plugin.version>
     </properties>
 
@@ -195,23 +195,8 @@
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-support</artifactId>
-            <version>2.20</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-scm-step</artifactId>
             <version>2.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-cps</artifactId>
-            <version>2.56</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>scm-api</artifactId>
-            <version>2.2.8</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>

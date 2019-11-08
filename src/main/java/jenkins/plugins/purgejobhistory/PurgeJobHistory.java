@@ -26,18 +26,19 @@ package jenkins.plugins.purgejobhistory;
 import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.Extension;
 import hudson.cli.CLICommand;
-import hudson.model.AbstractItem;
-import hudson.model.Job;
-import hudson.model.Queue;
-import hudson.model.Run;
+import hudson.model.*;
 import hudson.security.ACL;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
+import hudson.security.Permission;
 import hudson.util.RunList;
+import jenkins.model.Jenkins;
+import org.acegisecurity.AccessDeniedException;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 import org.kohsuke.args4j.Argument;
@@ -118,15 +119,15 @@ public class PurgeJobHistory extends CLICommand {
      * @throws IOException if something went wrong.
      * @since 1.1
      */
+    @Deprecated
     public static void purge(Job<?, ?> job, boolean resetNextBuildNumber, boolean force) throws IOException {
-        ACL lastACL = null;
-        for (Run<?, ?> run : new ArrayList<Run<?, ?>>(job.getBuilds())) {
-            ACL acl = run.getACL();
-            if (acl != lastACL) {
-                // all known implementations of Run will only do this check once, so this is a worthwhile
-                // optimization.
-                acl.checkPermission(Run.DELETE);
-                lastACL = acl;
+        for(Run run : job.getBuilds()){
+            try{
+                run.checkPermission(Permission.DELETE);
+            }
+            catch (AccessDeniedException ex) {
+                LOGGER.warning(String.format("Could not delete %s. Access Denied.", run.getFullDisplayName()));
+                continue;
             }
             if (!force && run.isKeepLog()) {
                 continue;
@@ -135,10 +136,17 @@ public class PurgeJobHistory extends CLICommand {
                 run.delete();
         }
         if (resetNextBuildNumber && job.getLastBuild() == null) {
-            job.updateNextBuildNumber(1);
+            job.updateNextBuildNumber(job.getBuilds().size()+1);
         }
     }
 
+    public void purge(boolean reset, boolean force, boolean recurse) throws IOException {
+        LOGGER.info("Purge Build History for All Items. This can take long");
+        List<Item> allItems = Jenkins.getInstanceOrNull().getAllItems();
+        for(Item item : allItems) {
+            this.purge((AbstractItem) item, reset, force, recurse);
+        }
+    }
 
     public void purge(AbstractItem item, boolean reset, boolean force, boolean recurse) throws IOException {
         LOGGER.info(String.format("Purge started for %s - Reset Build Num:%s - Force Delete:%s - Recursive:%s", item.getFullName(), reset, force, recurse));
@@ -178,6 +186,13 @@ public class PurgeJobHistory extends CLICommand {
         Iterator iterator = runList.iterator();
         while (iterator.hasNext()) {
             Run run = (Run) iterator.next();
+            try{
+                run.checkPermission(Run.DELETE);
+            }
+            catch (AccessDeniedException ex){
+                LOGGER.warning(String.format("Access Denied for Deleting %s - Skipping"));
+                continue;
+            }
             LOGGER.info(String.format("Deleting build %s", run.getFullDisplayName()));
             if (!force && run.isKeepLog()) {
                 LOGGER.info(String.format("Force:%s - KeepLog:%s - Skipping", force, run.isKeepLog()));

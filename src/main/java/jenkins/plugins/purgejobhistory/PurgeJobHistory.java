@@ -27,12 +27,11 @@ import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.model.*;
-import hudson.security.ACL;
-
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.security.Permission;
@@ -142,9 +141,14 @@ public class PurgeJobHistory extends CLICommand {
 
     public void purge(boolean reset, boolean force, boolean recurse) throws IOException {
         LOGGER.info("Purge Build History for All Items. This can take long");
-        List<Item> allItems = Jenkins.getInstanceOrNull().getAllItems();
-        for(Item item : allItems) {
-            this.purge((AbstractItem) item, reset, force, recurse);
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        if (jenkins == null){
+            LOGGER.warning("Failed to get Jenkins Instance - Quitting");
+            return;
+        }
+        List<AbstractItem> allItems = jenkins.getItems(AbstractItem.class);
+        for (AbstractItem item : allItems) {
+            this.purge(item, reset, force, recurse);
         }
     }
 

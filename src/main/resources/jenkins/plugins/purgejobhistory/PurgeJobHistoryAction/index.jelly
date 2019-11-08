@@ -23,23 +23,25 @@
  ~ THE SOFTWARE.
  -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${%title(it.job.displayName)}">
-    <st:include page="sidepanel.jelly" it="${it.job}"/>
+  <l:layout title="${%title(it.job.displayName)}" norefresh="true">
+    <st:include page="sidepanel.jelly" it="${it.item}"/>
     <l:main-panel>
-      <f:form name="purge" method="post" action="doPurge">
-        <f:block>
-          ${%blurb(it.job.pronoun, it.job.displayName)}
-        </f:block>
-        <f:entry title="${%Also, reset next build number to 1}" >
-          <f:checkbox name="resetNextBuild" />
-        </f:entry>
-        <f:entry title="${%Delete even builds marked to be kept forever}" >
-          <f:checkbox name="forceDelete" />
-        </f:entry>
-        <f:block>
-          <f:submit value="${%Yes}" />
-        </f:block>
-      </f:form>
+      <f:section title="${%blurb(it.item.displayName)}">
+        <f:form name="purge" method="post" action="doPurge">
+          <f:entry title="${%Reset build number to 1}" >
+            <f:checkbox name="resetNextBuild" />
+          </f:entry>
+          <f:entry title="${%Delete builds marked to be kept forever}" >
+            <f:checkbox name="forceDelete" />
+          </f:entry>
+          <f:entry title="${%Recurse into sub-folders/sub-jobs}" >
+            <f:checkbox name="recurse" />
+          </f:entry>
+          <f:block>
+            <f:submit value="${%Yes}" />
+          </f:block>
+        </f:form>
+      </f:section>
     </l:main-panel>
   </l:layout>
 </j:jelly>

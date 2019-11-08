@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.model.AbstractItem;
 import hudson.model.Job;
+import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.security.ACL;
 

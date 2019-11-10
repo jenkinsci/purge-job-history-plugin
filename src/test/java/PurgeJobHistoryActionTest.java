@@ -81,6 +81,15 @@ public class PurgeJobHistoryActionTest {
     }
 
     @Test
+    public void testPurgeAll() throws Exception {
+        if(!this.recurse)
+            return;
+        this.initWorkflowMultiBranchProject(this.keepItForever);
+        this.initFreeStyleProject(this.keepItForever);
+        this.performTest();
+    }
+
+    @Test
     public void testWorkflowMultiBranchProject() throws Exception {
         WorkflowMultiBranchProject workflowMultiBranchProject = this.initWorkflowMultiBranchProject(this.keepItForever);
         this.performTest(workflowMultiBranchProject);
@@ -92,9 +101,23 @@ public class PurgeJobHistoryActionTest {
         this.performTest(freeStyleProject);
     }
 
+    private void performTest() throws Exception {
+        this.performDeleteAllBuildHistory(this.resetBuildNum, this.forceDelete);
+        List<Item> allItems = jenkins.getInstance().getAllItems();
+        for(Item item : allItems) {
+            List<BuildStatus> builds = this.getBuildStatus((AbstractItem) item);
+            this.checkBuilds(builds, (AbstractItem) item);
+        }
+
+    }
+
     private void performTest(AbstractItem item) throws Exception {
         this.performDeleteJobBuildHistory(item, this.resetBuildNum, this.forceDelete, this.recurse);
         List<BuildStatus> builds = this.getBuildStatus(item);
+        this.checkBuilds(builds, item);
+    }
+
+    private void checkBuilds(List<BuildStatus> builds, AbstractItem item) {
         for (BuildStatus buildStatus : builds) {
             if ( this.recurse == false && item instanceof WorkflowMultiBranchProject) {
                 // For WorkflowMultiBranch project. If recurse is false, can not delete any build. Because Job it self has no runs.
@@ -209,10 +232,17 @@ public class PurgeJobHistoryActionTest {
         return run;
     }
 
+    private void performDeleteAllBuildHistory( boolean resetBuildNumber, boolean force) throws Exception {
+        HtmlPage htmlPage = (HtmlPage) jenkins.createWebClient().getPage(this.jenkins.getURL()+"purge-job-history");
+        HtmlForm form = htmlPage.getFormByName("purge");
+        form.getInputByName("resetNextBuild").setChecked(resetBuildNumber);
+        form.getInputByName("forceDelete").setChecked(force);
+        jenkins.submit(form);
+    }
+
     private void performDeleteJobBuildHistory(AbstractItem item, boolean resetBuildNumber, boolean force, boolean recurse) throws Exception {
         HtmlPage htmlPage = jenkins.createWebClient().getPage(item, "purge-job-history");
         HtmlForm form = htmlPage.getFormByName("purge");
-        String test = form.toString();
         form.getInputByName("resetNextBuild").setChecked(resetBuildNumber);
         form.getInputByName("forceDelete").setChecked(force);
         form.getInputByName("recurse").setChecked(recurse);

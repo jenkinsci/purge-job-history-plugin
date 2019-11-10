@@ -44,7 +44,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 public class PurgeJobHistoryAction implements Action {
 
-    private String iconPath = "/plugin/purge-job-history/images/24x24/purge-job-history.png";
     private PurgeJobHistory purgeJobHistory = new PurgeJobHistory();
 
     /**
@@ -67,18 +66,18 @@ public class PurgeJobHistoryAction implements Action {
     public String getIconFileName() {
         //Check permission first.
         if(purgeJobHistory.checkPermission(this.item)) {
-            return this.iconPath;
+            return StaticValues.iconPath;
         } else {
             return null;
         }
     }
 
     public String getDisplayName() {
-        return Messages.PurgeJobHistoryAction_DisplayName();
+        return StaticValues.displayName;
     }
 
     public String getUrlName() {
-        return "purge-job-history";
+        return StaticValues.urlName;
     }
 
     @RequirePOST
@@ -104,6 +103,5 @@ public class PurgeJobHistoryAction implements Action {
         public Collection<? extends Action> createFor(@Nonnull AbstractItem abstractItem) {
             return Collections.singleton(new PurgeJobHistoryAction(abstractItem));
         }
-
     }
 }

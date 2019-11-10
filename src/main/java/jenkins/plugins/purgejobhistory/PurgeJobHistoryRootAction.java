@@ -21,12 +21,23 @@ import java.util.Collections;
 @Extension
 public class PurgeJobHistoryRootAction implements RootAction {
 
+    private AbstractItem item;
+
+    public PurgeJobHistoryRootAction() {}
+
+    public PurgeJobHistoryRootAction(AbstractItem item) {
+        this.item = item;
+    }
+
     PurgeJobHistory purgeJobHistory = new PurgeJobHistory();
 
     @CheckForNull
     @Override
     public String getIconFileName() {
-        return StaticValues.iconPath;
+        if ( this.item != null)
+            return null;
+        else
+            return StaticValues.iconPath;
     }
 
     @CheckForNull
@@ -61,7 +72,7 @@ public class PurgeJobHistoryRootAction implements RootAction {
         @Nonnull
         @Override
         public Collection<? extends Action> createFor(@Nonnull AbstractItem abstractItem) {
-            return Collections.singleton(new PurgeJobHistoryRootAction());
+            return Collections.singleton(new PurgeJobHistoryRootAction(abstractItem));
         }
     }
 }

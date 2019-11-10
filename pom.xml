@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>purge-job-history</artifactId>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.4</version>
     <packaging>hpi</packaging>
 
     <name>Purge Job History Plugin</name>
@@ -65,7 +65,7 @@
         <connection>scm:git:git://github.com/jenkinsci/purge-job-history-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/purge-job-history-plugin.git</developerConnection>
         <url>http://github.com/jenkinsci/purge-job-history-plugin</url>
-        <tag>purge-job-history-1.3</tag>
+        <tag>purge-job-history-1.4</tag>
     </scm>
 
     <properties>

@@ -1,60 +1,32 @@
 Jenkins Purge Job History Plugin
 =====================
 
-Read more: [http://wiki.jenkins-ci.org/display/JENKINS/Purge+Job+History+Plugin](http://wiki.jenkins-ci.org/display/JENKINS/Purge+Job+History+Plugin)
+This plugin provides ability to purge all build history of;
+- Job
+- Pipeline
+- MultiBranch Job (Recursive Flag is Needed)
+- Jobs under a Folder (Recursive Flag is Needed)
+- All Job under Jenkins Instance (Recursive Flag is Needed)
 
-Development
-===========
+Usage
+=====================
+Go to a Job (Any type of) or a Folder and click on the "Purge Build History" link on the left menu.
 
-Start the local Jenkins instance:
+Select none or all of the options.
+- Reset build number to 1: Resets the next build number 1 if all the builds are deleted.
+- Delete builds marked to be kept forever: Als delete any builds even they are marked to keep forever.
+- Recurse into sub-folders/sub-jobs: Recurse into all Jobs/Folders under the selected Job/Folder
 
-    mvn hpi:run
+Note: If you click "Purge Build History" link on the main page of the Jenkins. Plugin will recurse into
+all Jobs/Folder and delete the builds depending on your selection.
 
+Example Screenshots;
 
-How to install
---------------
+![](images/pjh1.png)
 
-Run
+![](images/pjh2.png)
 
-	mvn clean package
-
-to create the plugin .hpi file.
-
-
-To install:
-
-1. copy the resulting ./target/purge-job-history.hpi file to the $JENKINS_HOME/plugins directory. Don't forget to restart Jenkins afterwards.
-
-2. or use the plugin management console (http://example.com:8080/pluginManager/advanced) to upload the hpi file. You have to restart Jenkins in order to find the pluing in the installed plugins list.
-
-
-Plugin releases
----------------
-
-	mvn release:prepare release:perform -B
-
-
-License
--------
-
-	(The MIT License)
-
-    Copyright © 2015, CloudBees, Inc.
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in
-    all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-    THE SOFTWARE.
+Logs
+=====================
+Depending on the Job/Folder and the selections, purge action can take long time. 
+You can follow the process from the Jenkins Logs

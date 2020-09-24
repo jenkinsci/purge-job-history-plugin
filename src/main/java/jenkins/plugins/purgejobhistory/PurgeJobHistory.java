@@ -121,10 +121,7 @@ public class PurgeJobHistory extends CLICommand {
     @Deprecated
     public static void purge(Job<?, ?> job, boolean resetNextBuildNumber, boolean force) throws IOException {
         for(Run run : job.getBuilds()){
-            try{
-                run.checkPermission(Permission.DELETE);
-            }
-            catch (AccessDeniedException ex) {
+            if (!run.hasPermission(Run.DELETE)) {
                 LOGGER.warning(String.format("Could not delete %s. Access Denied.", run.getFullDisplayName()));
                 continue;
             }
@@ -190,11 +187,8 @@ public class PurgeJobHistory extends CLICommand {
         Iterator iterator = runList.iterator();
         while (iterator.hasNext()) {
             Run run = (Run) iterator.next();
-            try{
-                run.checkPermission(Run.DELETE);
-            }
-            catch (AccessDeniedException ex){
-                LOGGER.warning(String.format("Access Denied for Deleting %s - Skipping"));
+            if (!run.hasPermission(Run.DELETE)) {
+                LOGGER.warning(String.format("Access Denied for Deleting %s - Skipping", run.getFullDisplayName()));
                 continue;
             }
             LOGGER.info(String.format("Deleting build %s", run.getFullDisplayName()));

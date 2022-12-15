@@ -82,7 +82,7 @@
         <workflow-scm-step-plugin.version>2.4</workflow-scm-step-plugin.version>
         <workflow-support.version>2.20</workflow-support.version>
         <workflow-cps.version>2.56</workflow-cps.version>
-        <git-plugin.version>3.9.1</git-plugin.version>
+        <git-plugin.version>4.11.5</git-plugin.version>
     </properties>
 
     <repositories>

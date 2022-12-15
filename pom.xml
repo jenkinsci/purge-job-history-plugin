@@ -75,7 +75,7 @@
         <jenkins.version>2.176.1</jenkins.version>
         <java.level>8</java.level>
         <java.version>1.8</java.version>
-        <junit.version>1.6</junit.version>
+        <junit.version>1159.v0b_396e1e07dd</junit.version>
         <workflow-multibranch.version>2.21</workflow-multibranch.version>
         <scm-api.version>2.2.8</scm-api.version>
         <workflow-step-api.version>2.16</workflow-step-api.version>

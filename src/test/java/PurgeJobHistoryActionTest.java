@@ -1,6 +1,6 @@
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import hudson.model.*;
 import hudson.tasks.LogRotator;
 import jenkins.branch.BranchSource;
@@ -169,7 +169,7 @@ public class PurgeJobHistoryActionTest {
         gitRepo.init();
         if (keepItForever)
             gitRepo.write("Jenkinsfile", "pipeline { \n" +
-                    "    agent { label 'master' } \n" +
+                    "    agent { label 'built-in' } \n" +
                     "    options { buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '') } \n" +
                     "    stages { \n" +
                     "        stage('test') { \n" +
@@ -183,7 +183,7 @@ public class PurgeJobHistoryActionTest {
                     "}");
         else
             gitRepo.write("Jenkinsfile", "pipeline { \n" +
-                    "    agent { label 'master' } \n" +
+                    "    agent { label 'built-in' } \n" +
                     "    stages { \n" +
                     "        stage('test') { \n" +
                     "            steps { \n" +

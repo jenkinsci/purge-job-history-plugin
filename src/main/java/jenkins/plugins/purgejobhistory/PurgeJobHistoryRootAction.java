@@ -37,7 +37,7 @@ public class PurgeJobHistoryRootAction implements RootAction {
         if ( this.item != null)
             return null;
         else
-            return StaticValues.iconPath;
+            return "symbol-trash-bin-outline plugin-ionicons-api";
     }
 
     @CheckForNull

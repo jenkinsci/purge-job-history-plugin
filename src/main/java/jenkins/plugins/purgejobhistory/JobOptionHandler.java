@@ -23,16 +23,15 @@
  */
 package jenkins.plugins.purgejobhistory;
 
+import hudson.cli.declarative.OptionHandlerExtension;
 import hudson.cli.handlers.GenericItemOptionHandler;
 import hudson.model.Job;
-import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
-// TODO drop this once Core has an equivalent option handler
-@MetaInfServices(OptionHandler.class)
+@OptionHandlerExtension
 public class JobOptionHandler extends GenericItemOptionHandler<Job> {
     public JobOptionHandler(CmdLineParser parser, OptionDef option, Setter<Job> setter) {
         super(parser, option, setter);

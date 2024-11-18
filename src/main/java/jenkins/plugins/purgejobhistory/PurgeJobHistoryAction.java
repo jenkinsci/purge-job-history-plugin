@@ -66,7 +66,7 @@ public class PurgeJobHistoryAction implements Action {
     public String getIconFileName() {
         //Check permission first.
         if(purgeJobHistory.checkPermission(this.item)) {
-            return StaticValues.iconPath;
+            return "symbol-trash-bin-outline plugin-ionicons-api";
         } else {
             return null;
         }

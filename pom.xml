@@ -41,7 +41,7 @@
     <description>
         This plugin allows you quickly delete the build history of a job.
     </description>
-    <url>https://github.com/jenkinsci/purge-job-history-plugin</url>
+    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <licenses>
         <license>
             <name>The MIT license</name>
@@ -60,7 +60,7 @@
     <properties>
         <revision>1.7</revision>
         <changelist>-SNAPSHOT</changelist>
-        <gitHubRepo>jenkinsci/purge-job-history-plugin</gitHubRepo>
+        <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
         <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
         <jenkins.baseline>2.452</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.4</jenkins.version>

@@ -34,7 +34,7 @@
     </parent>
 
     <artifactId>purge-job-history</artifactId>
-    <version>${revision}${changelist}</version>
+    <version>${changelist}</version>
     <packaging>hpi</packaging>
 
     <name>Purge Job History Plugin</name>
@@ -58,8 +58,7 @@
     </scm>
 
     <properties>
-        <revision>1.7</revision>
-        <changelist>-SNAPSHOT</changelist>
+        <changelist>999999-SNAPSHOT</changelist>
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
         <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
         <jenkins.baseline>2.452</jenkins.baseline>

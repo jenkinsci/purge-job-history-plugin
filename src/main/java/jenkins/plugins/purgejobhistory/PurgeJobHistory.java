@@ -28,16 +28,11 @@ import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.model.*;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import hudson.security.Permission;
 import hudson.util.RunList;
 import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 import org.kohsuke.args4j.Argument;
@@ -156,12 +151,12 @@ public class PurgeJobHistory extends CLICommand {
             if (item instanceof Folder) {
                 Folder folder = (Folder) item;
                 for (AbstractItem innerItem : folder.getAllItems(AbstractItem.class)) {
-                    purge(innerItem, reset, force, recurse);
+                    purge(innerItem, reset, force, true);
                 }
             } else if (item instanceof WorkflowMultiBranchProject) {
                 WorkflowMultiBranchProject workflowMultiBranchProject = (WorkflowMultiBranchProject) item;
                 for (AbstractItem innerItem : workflowMultiBranchProject.getAllJobs()) {
-                    purge(innerItem, reset, force, recurse);
+                    purge(innerItem, reset, force, true);
                 }
             } else {
                 LOGGER.warning("Can not recurse into " + item.getFullName());
@@ -184,19 +179,18 @@ public class PurgeJobHistory extends CLICommand {
     }
 
     private void deleteBuilds(RunList runList, boolean force) throws IOException {
-        Iterator iterator = runList.iterator();
-        while (iterator.hasNext()) {
-            Run run = (Run) iterator.next();
+        for (Object o : runList) {
+            Run run = (Run) o;
             if (!run.hasPermission(Run.DELETE)) {
                 LOGGER.warning(String.format("Access Denied for Deleting %s - Skipping", run.getFullDisplayName()));
                 continue;
             }
             LOGGER.info(String.format("Deleting build %s", run.getFullDisplayName()));
             if (!force && run.isKeepLog()) {
-                LOGGER.info(String.format("Force:%s - KeepLog:%s - Skipping", force, run.isKeepLog()));
+                LOGGER.info(String.format("Force:%s - KeepLog:%s - Skipping", false, run.isKeepLog()));
                 continue;
             }
-            if( !run.isBuilding()) {
+            if (!run.isBuilding()) {
                 run.delete();
                 LOGGER.info(String.format("Deleted build %s", run.getFullDisplayName()));
             }
